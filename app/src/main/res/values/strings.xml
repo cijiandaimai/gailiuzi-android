@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">改流子</string>
+    <string name="accessibility_service_description">改流子读取抖音、美团、大众点评和小红书的可见页面，协助定位评论、生成草稿并在用户确认后执行操作。</string>
+</resources>
