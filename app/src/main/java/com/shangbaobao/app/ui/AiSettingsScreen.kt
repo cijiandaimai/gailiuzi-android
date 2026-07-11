@@ -61,6 +61,8 @@ import com.shangbaobao.app.ai.AssistantProfile
 import com.shangbaobao.app.ai.OfficialPlatformConfig
 import com.shangbaobao.app.ai.PersonalityPreset
 import com.shangbaobao.app.ai.PhraseTemplate
+import com.shangbaobao.app.business.BusinessRepository
+import com.shangbaobao.app.knowledge.KnowledgeBaseRepository
 import com.shangbaobao.app.model.Platform
 import kotlinx.coroutines.launch
 
@@ -69,6 +71,8 @@ fun AiSettingsScreen(
     modifier: Modifier,
     repository: AiSettingsRepository,
     gateway: AiGateway,
+    knowledgeRepository: KnowledgeBaseRepository,
+    businessRepository: BusinessRepository,
 ) {
     val state by repository.state.collectAsState()
     var showPhraseDialog by remember { mutableStateOf(false) }
@@ -83,7 +87,7 @@ fun AiSettingsScreen(
             AiSectionHeader(
                 icon = Icons.Outlined.AutoAwesome,
                 title = "模型API",
-                subtitle = "支持GPT和豆包Responses API，密钥使用Android Keystore加密保存。",
+                subtitle = "商户自主选择主控模型。推荐GPT和豆包，并支持千问、Gemini、DeepSeek及OpenAI兼容接口。",
             )
         }
         item {
@@ -95,7 +99,15 @@ fun AiSettingsScreen(
         items(state.providers, key = { it.provider.name }) { config ->
             ProviderConfigCard(config, repository, gateway)
         }
-        item { ReplyTestCard(repository, gateway) }
+        item {
+            AiSectionHeader(
+                icon = Icons.Outlined.CloudDone,
+                title = "网络与绿色通道",
+                subtitle = "国内模型优先直连；其他模型可使用商户自有企业API网关，不内置VPN。",
+            )
+        }
+        item { NetworkRouteCard(state.networkRoute, state.providers, repository) }
+        item { ReplyTestCard(repository, gateway, knowledgeRepository, businessRepository) }
 
         item {
             AiSectionHeader(
@@ -181,6 +193,8 @@ fun AiSettingsScreen(
 private fun ReplyTestCard(
     repository: AiSettingsRepository,
     gateway: AiGateway,
+    knowledgeRepository: KnowledgeBaseRepository,
+    businessRepository: BusinessRepository,
 ) {
     var platform by remember { mutableStateOf(Platform.DOUYIN) }
     var input by remember { mutableStateOf("请问你们门店在哪里，周末可以预约吗？") }
@@ -188,7 +202,9 @@ private fun ReplyTestCard(
     var output by remember { mutableStateOf("") }
     var meta by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    val replyService = remember(repository, gateway) { AiReplyService(repository, gateway) }
+    val replyService = remember(repository, gateway, knowledgeRepository, businessRepository) {
+        AiReplyService(repository, gateway, knowledgeRepository, businessRepository)
+    }
 
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f))) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -228,6 +244,13 @@ private fun ReplyTestCard(
                                 if (isNotEmpty()) append(" · ")
                                 append("话术：$it")
                             }
+                            if (result.requiresApproval) {
+                                if (isNotEmpty()) append(" · ")
+                                append("需合规审核")
+                            }
+                            if (result.riskFlags.isNotEmpty()) {
+                                append("\n风险：${result.riskFlags.joinToString("、")}")
+                            }
                         }
                     }
                 },
@@ -266,7 +289,7 @@ private fun PrimaryProviderSelector(
                 FilterChip(
                     selected = selected == provider,
                     onClick = { onSelected(provider) },
-                    label = { Text(provider.displayName) },
+                    label = { Text(provider.displayName + if (provider.recommended) "（推荐）" else "") },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -300,7 +323,12 @@ private fun ProviderConfigCard(
                 Column(Modifier.weight(1f)) {
                     Text(config.provider.displayName, style = MaterialTheme.typography.titleMedium)
                     Text(
-                        if (config.apiKeyConfigured) "API Key已加密保存" else "尚未配置API Key",
+                        buildString {
+                            append(if (config.apiKeyConfigured) "API Key已加密保存" else "尚未配置API Key")
+                            append(" · ")
+                            append(if (config.provider.supportsMultimodal) "多模态" else "文本模型")
+                            append(" · ${config.provider.protocol.name}")
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = if (config.apiKeyConfigured) Color(0xFF067647)
                         else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -353,9 +381,13 @@ private fun ProviderConfigCard(
                             testing = true
                             testMessage = null
                             scope.launch {
+                                val testConfig = config.copy(enabled = enabled, baseUrl = baseUrl, model = model)
+                                val route = repository.resolveRoute(testConfig)
                                 val result = gateway.testConnection(
-                                    config.copy(enabled = enabled, baseUrl = baseUrl, model = model),
-                                    currentKey,
+                                    config = testConfig,
+                                    apiKey = currentKey,
+                                    route = route,
+                                    connectTimeoutSeconds = repository.state.value.networkRoute.connectTimeoutSeconds,
                                 )
                                 testing = false
                                 testSuccess = result.success

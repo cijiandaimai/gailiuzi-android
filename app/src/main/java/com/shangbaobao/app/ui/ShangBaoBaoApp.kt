@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.AccessibilityNew
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Campaign
@@ -70,7 +71,9 @@ import androidx.compose.ui.unit.dp
 import com.shangbaobao.app.agent.AgentEventStore
 import com.shangbaobao.app.ai.AiGateway
 import com.shangbaobao.app.ai.AiSettingsRepository
+import com.shangbaobao.app.business.BusinessRepository
 import com.shangbaobao.app.data.ModeSettingsRepository
+import com.shangbaobao.app.knowledge.KnowledgeBaseRepository
 import com.shangbaobao.app.model.AgentEvent
 import com.shangbaobao.app.model.AgentEventType
 import com.shangbaobao.app.model.AutomationLevel
@@ -81,9 +84,10 @@ import com.shangbaobao.app.platform.PermissionInspector
 import java.util.Date
 
 private enum class AppTab(val title: String, val icon: ImageVector) {
-    WORKBENCH("工作台", Icons.Outlined.Home),
+    WORKBENCH("经营", Icons.Outlined.Home),
     TASKS("动态", Icons.Outlined.TaskAlt),
-    AI_SETTINGS("AI配置", Icons.Outlined.AutoAwesome),
+    KNOWLEDGE("知识", Icons.AutoMirrored.Outlined.LibraryBooks),
+    AI_SETTINGS("模型", Icons.Outlined.AutoAwesome),
     SETTINGS("设置", Icons.Outlined.Settings),
 }
 
@@ -93,6 +97,8 @@ fun ShangBaoBaoApp(
     modeSettingsRepository: ModeSettingsRepository,
     aiSettingsRepository: AiSettingsRepository,
     aiGateway: AiGateway,
+    businessRepository: BusinessRepository,
+    knowledgeRepository: KnowledgeBaseRepository,
     openAccessibilitySettings: () -> Unit,
     openNotificationSettings: () -> Unit,
     requestNotificationPermission: () -> Unit,
@@ -114,7 +120,7 @@ fun ShangBaoBaoApp(
                     Column {
                         Text("改流子", fontWeight = FontWeight.Bold)
                         Text(
-                            "商家口碑运营助手 · 初版",
+                            "服务行业超级口碑智能体",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -145,6 +151,7 @@ fun ShangBaoBaoApp(
         when (AppTab.entries[selectedTab]) {
             AppTab.WORKBENCH -> WorkbenchScreen(
                 modifier = Modifier.padding(padding),
+                businessRepository = businessRepository,
                 enabledModes = modeSettings.enabledModes,
                 permissions = permissions,
                 running = running,
@@ -160,10 +167,20 @@ fun ShangBaoBaoApp(
                 onClear = AgentEventStore::clear,
             )
 
+            AppTab.KNOWLEDGE -> KnowledgeBaseScreen(
+                modifier = Modifier.padding(padding),
+                repository = knowledgeRepository,
+                businessRepository = businessRepository,
+                aiRepository = aiSettingsRepository,
+                gateway = aiGateway,
+            )
+
             AppTab.AI_SETTINGS -> AiSettingsScreen(
                 modifier = Modifier.padding(padding),
                 repository = aiSettingsRepository,
                 gateway = aiGateway,
+                knowledgeRepository = knowledgeRepository,
+                businessRepository = businessRepository,
             )
 
             AppTab.SETTINGS -> SettingsScreen(
@@ -183,6 +200,7 @@ fun ShangBaoBaoApp(
 @Composable
 private fun WorkbenchScreen(
     modifier: Modifier,
+    businessRepository: BusinessRepository,
     enabledModes: Set<AutomationMode>,
     permissions: PermissionSnapshot,
     running: Boolean,
@@ -196,6 +214,7 @@ private fun WorkbenchScreen(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        item { BusinessDashboard(businessRepository) }
         item {
             AgentStatusCard(
                 running = running,
@@ -217,7 +236,7 @@ private fun WorkbenchScreen(
         }
         item {
             InfoCard(
-                title = "初版运行边界",
+                title = "当前运行边界",
                 text = "当前版本完成权限、页面观察、通知发现、模式配置和安全策略底座，不会自动发布评论。",
             )
         }
@@ -513,7 +532,7 @@ private fun SettingsScreen(
         item {
             InfoCard(
                 title = "数据保护",
-                text = "平台账号仍由用户在官方 App 内登录。改流子初版不收集平台密码，不建立跨平台个人画像。",
+                text = "平台账号仍由用户在官方 App 内登录。改流子不收集平台密码，不建立跨平台个人画像。",
                 icon = Icons.Outlined.Lock,
             )
         }

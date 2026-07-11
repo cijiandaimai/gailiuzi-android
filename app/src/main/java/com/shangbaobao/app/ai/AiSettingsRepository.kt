@@ -38,6 +38,53 @@ class AiSettingsRepository(context: Context) {
         reload()
     }
 
+    fun saveNetworkRoute(settings: NetworkRouteSettings, newGatewayToken: String? = null) {
+        if (!newGatewayToken.isNullOrBlank()) {
+            secretStore.put(KEY_GATEWAY_TOKEN, newGatewayToken.trim())
+        }
+        preferences.edit {
+            putBoolean(KEY_GREEN_CHANNEL_ENABLED, settings.greenChannelEnabled)
+            putString(KEY_MERCHANT_REGION, settings.region.name)
+            putString(KEY_NETWORK_ROUTE_MODE, settings.routeMode.name)
+            putString(KEY_GATEWAY_BASE_URL, settings.gatewayBaseUrl.trim())
+            putBoolean(KEY_ALLOW_DIRECT_FALLBACK, settings.allowDirectFallback)
+            putInt(KEY_CONNECT_TIMEOUT_SECONDS, settings.connectTimeoutSeconds.coerceIn(5, 60))
+        }
+        reload()
+    }
+
+    fun clearGatewayToken() {
+        secretStore.remove(KEY_GATEWAY_TOKEN)
+        reload()
+    }
+
+    fun getGatewayToken(): String? = secretStore.get(KEY_GATEWAY_TOKEN)
+
+    fun resolveRoute(config: AiProviderConfig): ResolvedAiRoute {
+        val settings = mutableState.value.networkRoute
+        if (!settings.greenChannelEnabled || settings.routeMode == NetworkRouteMode.DIRECT) {
+            return ResolvedAiRoute(config.baseUrl, viaGateway = false)
+        }
+        val shouldUseGateway = when (settings.routeMode) {
+            NetworkRouteMode.MERCHANT_GATEWAY -> true
+            NetworkRouteMode.DIRECT -> false
+            NetworkRouteMode.SMART -> !config.provider.mainlandFriendly &&
+                settings.region in setOf(
+                    MerchantRegion.AUTO,
+                    MerchantRegion.MAINLAND_CHINA,
+                    MerchantRegion.HONG_KONG_MACAU,
+                )
+        }
+        if (!shouldUseGateway || settings.gatewayBaseUrl.isBlank()) {
+            return ResolvedAiRoute(config.baseUrl, viaGateway = false)
+        }
+        return ResolvedAiRoute(
+            baseUrl = settings.gatewayBaseUrl.trimEnd('/') + "/providers/${config.provider.routeKey}",
+            viaGateway = true,
+            gatewayToken = getGatewayToken().orEmpty(),
+        )
+    }
+
     fun saveProfile(profile: AssistantProfile) {
         preferences.edit {
             putBoolean(KEY_PROFILE_ENABLED, profile.enabled)
@@ -115,7 +162,7 @@ class AiSettingsRepository(context: Context) {
         assistantProfile = AssistantProfile(
             enabled = preferences.getBoolean(KEY_PROFILE_ENABLED, true),
             identityName = preferences.getString(KEY_PROFILE_NAME, "小改").orEmpty(),
-            role = preferences.getString(KEY_PROFILE_ROLE, "商家客服与口碑运营助手").orEmpty(),
+            role = preferences.getString(KEY_PROFILE_ROLE, "服务行业商家客服与口碑运营助手").orEmpty(),
             personality = preferences.getString(
                 KEY_PROFILE_PERSONALITY,
                 PersonalityPreset.PROFESSIONAL_WARM.name,
@@ -127,6 +174,21 @@ class AiSettingsRepository(context: Context) {
         phraseLibraryEnabled = preferences.getBoolean(KEY_PHRASE_LIBRARY_ENABLED, true),
         phrases = loadPhrases(),
         officialPlatforms = Platform.entries.map(::loadOfficialPlatform),
+        networkRoute = loadNetworkRoute(),
+    )
+
+    private fun loadNetworkRoute(): NetworkRouteSettings = NetworkRouteSettings(
+        greenChannelEnabled = preferences.getBoolean(KEY_GREEN_CHANNEL_ENABLED, false),
+        region = preferences.getString(KEY_MERCHANT_REGION, MerchantRegion.AUTO.name)
+            ?.let { saved -> MerchantRegion.entries.firstOrNull { it.name == saved } }
+            ?: MerchantRegion.AUTO,
+        routeMode = preferences.getString(KEY_NETWORK_ROUTE_MODE, NetworkRouteMode.SMART.name)
+            ?.let { saved -> NetworkRouteMode.entries.firstOrNull { it.name == saved } }
+            ?: NetworkRouteMode.SMART,
+        gatewayBaseUrl = preferences.getString(KEY_GATEWAY_BASE_URL, "").orEmpty(),
+        gatewayTokenConfigured = secretStore.contains(KEY_GATEWAY_TOKEN),
+        allowDirectFallback = preferences.getBoolean(KEY_ALLOW_DIRECT_FALLBACK, true),
+        connectTimeoutSeconds = preferences.getInt(KEY_CONNECT_TIMEOUT_SECONDS, 20).coerceIn(5, 60),
     )
 
     private fun loadOfficialPlatform(platform: Platform): OfficialPlatformConfig {
@@ -199,6 +261,13 @@ class AiSettingsRepository(context: Context) {
         private const val PREFERENCES_NAME = "ai_settings"
         private const val KEY_PROFILE_ENABLED = "profile_enabled"
         private const val KEY_PRIMARY_PROVIDER = "primary_provider"
+        private const val KEY_GREEN_CHANNEL_ENABLED = "green_channel_enabled"
+        private const val KEY_MERCHANT_REGION = "merchant_region"
+        private const val KEY_NETWORK_ROUTE_MODE = "network_route_mode"
+        private const val KEY_GATEWAY_BASE_URL = "gateway_base_url"
+        private const val KEY_GATEWAY_TOKEN = "network_gateway_token"
+        private const val KEY_ALLOW_DIRECT_FALLBACK = "allow_direct_fallback"
+        private const val KEY_CONNECT_TIMEOUT_SECONDS = "connect_timeout_seconds"
         private const val KEY_PROFILE_NAME = "profile_name"
         private const val KEY_PROFILE_ROLE = "profile_role"
         private const val KEY_PROFILE_PERSONALITY = "profile_personality"

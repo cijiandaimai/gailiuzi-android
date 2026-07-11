@@ -3,7 +3,7 @@
 ## 1. 版本信息
 
 - 产品名：改流子
-- 版本：`0.2.0`
+- 当前演进版本：`0.3.0`
 - 包名：`com.shangbaobao.app`
 - 最低 API：31
 - Target/Compile API：36
@@ -38,7 +38,7 @@
 
 ### AI 配置
 
-- OpenAI GPT 与豆包方舟双模型配置、主模型选择和失败回退。
+- OpenAI GPT、豆包、千问、Gemini、DeepSeek及兼容模型配置、主模型选择和失败回退。
 - API Key 使用 Android Keystore 加密后保存。
 - 支持连接测试与独立的回复生成测试台。
 - 支持身份、性格、语气、边界和五种预设人格。
@@ -113,7 +113,7 @@ app/src/main/java/com/shangbaobao/app
 本次验证结果：
 
 - Debug APK 构建成功。
-- JVM 单元测试 11 项通过，失败 0 项。
+- JVM 单元测试 15 项通过，失败 0 项。
 - Android Lint 错误 0 项。
 - APK 路径：`app/build/outputs/apk/debug/app-debug.apk`。
 
