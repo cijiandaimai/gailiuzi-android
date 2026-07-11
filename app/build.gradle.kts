@@ -7,15 +7,15 @@ plugins {
 }
 
 android {
-    namespace = "com.shangbaobao.app"
+    namespace = "com.gailiuzi.app"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.shangbaobao.app"
+        applicationId = "com.gailiuzi.app"
         minSdk = 31
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

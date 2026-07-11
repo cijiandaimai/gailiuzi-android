@@ -9,4 +9,10 @@ captures/
 app/build/
 .android-sdk/
 .tooling/
-
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+google-services.json
+*.pem
+*.p12

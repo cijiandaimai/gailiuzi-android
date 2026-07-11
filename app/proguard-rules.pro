@@ -1,2 +1,1 @@
--keep class com.shangbaobao.app.agent.** { *; }
-
+-keep class com.gailiuzi.app.agent.** { *; }

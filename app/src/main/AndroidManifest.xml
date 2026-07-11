@@ -21,7 +21,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ShangBaoBao">
+        android:theme="@style/Theme.Gailiuzi"
+        android:usesCleartextTraffic="false">
 
         <activity
             android:name=".MainActivity"
@@ -39,7 +40,7 @@
             android:foregroundServiceType="dataSync" />
 
         <service
-            android:name=".agent.ShangBaoAccessibilityService"
+            android:name=".agent.GailiuziAccessibilityService"
             android:exported="false"
             android:label="改流子操作辅助"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -52,7 +53,7 @@
         </service>
 
         <service
-            android:name=".agent.ShangBaoNotificationListener"
+            android:name=".agent.GailiuziNotificationListener"
             android:exported="false"
             android:label="改流子通知发现"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">

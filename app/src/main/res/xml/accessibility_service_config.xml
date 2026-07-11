@@ -8,5 +8,4 @@
     android:description="@string/accessibility_service_description"
     android:notificationTimeout="150"
     android:packageNames="com.ss.android.ugc.aweme,com.sankuai.meituan,com.dianping.v1,com.xingin.xhs"
-    android:settingsActivity="com.shangbaobao.app.MainActivity" />
-
+    android:settingsActivity="com.gailiuzi.app.MainActivity" />
