@@ -6,7 +6,7 @@
 
 - 应用名称：改流子
 - Application ID：`com.shangbaobao.app`
-- 当前版本：`0.1.0 (1)`
+- 当前版本：`0.2.0 (2)`
 - 最低系统：Android 12 / API 31
 - 编译与目标版本：Android 16 / API 36
 - UI：Kotlin + Jetpack Compose + Material 3
@@ -22,6 +22,12 @@
 - 支持平台通知事件发现。
 - 潜在客户评分和互动策略核心逻辑。
 - 高风险升级、小红书人工确认和上下文不足阻断策略。
+- GPT/OpenAI与豆包/火山方舟Responses API配置、连接测试和主备切换。
+- API Key与平台Client Secret通过Android Keystore加密保存。
+- AI身份、角色、性格、语气和自定义指令配置。
+- 可开关、可编辑的预置话术库，开启后优先匹配话术。
+- AI回复测试台，可验证模型、身份和话术匹配结果。
+- 抖音、美团和小红书官方开放平台配置入口。
 
 初版不会自动发布评论，当前重点是完成权限、状态机、观察、风控和后续平台适配所需的工程底座。
 
@@ -54,6 +60,7 @@ Debug APK：`app/build/outputs/apk/debug/app-debug.apk`
 7. [验收标准与实施检查表](docs/07-验收标准与实施检查表.md)
 8. [潜在客户识别、上下文理解与互动策略](docs/08-潜在客户识别与互动策略.md)
 9. [初版 Android 应用实现说明](docs/09-初版Android应用实现说明.md)
+10. [AI API、身份性格与预置话术配置](docs/10-AI配置身份性格与话术库.md)
 
 ## 当前基线
 

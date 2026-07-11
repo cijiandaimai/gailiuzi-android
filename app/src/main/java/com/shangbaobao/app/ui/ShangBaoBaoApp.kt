@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessibilityNew
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Campaign
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.DeleteSweep
@@ -67,6 +68,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shangbaobao.app.agent.AgentEventStore
+import com.shangbaobao.app.ai.AiGateway
+import com.shangbaobao.app.ai.AiSettingsRepository
 import com.shangbaobao.app.data.ModeSettingsRepository
 import com.shangbaobao.app.model.AgentEvent
 import com.shangbaobao.app.model.AgentEventType
@@ -80,6 +83,7 @@ import java.util.Date
 private enum class AppTab(val title: String, val icon: ImageVector) {
     WORKBENCH("工作台", Icons.Outlined.Home),
     TASKS("动态", Icons.Outlined.TaskAlt),
+    AI_SETTINGS("AI配置", Icons.Outlined.AutoAwesome),
     SETTINGS("设置", Icons.Outlined.Settings),
 }
 
@@ -87,6 +91,8 @@ private enum class AppTab(val title: String, val icon: ImageVector) {
 @Composable
 fun ShangBaoBaoApp(
     modeSettingsRepository: ModeSettingsRepository,
+    aiSettingsRepository: AiSettingsRepository,
+    aiGateway: AiGateway,
     openAccessibilitySettings: () -> Unit,
     openNotificationSettings: () -> Unit,
     requestNotificationPermission: () -> Unit,
@@ -152,6 +158,12 @@ fun ShangBaoBaoApp(
                 modifier = Modifier.padding(padding),
                 events = events,
                 onClear = AgentEventStore::clear,
+            )
+
+            AppTab.AI_SETTINGS -> AiSettingsScreen(
+                modifier = Modifier.padding(padding),
+                repository = aiSettingsRepository,
+                gateway = aiGateway,
             )
 
             AppTab.SETTINGS -> SettingsScreen(

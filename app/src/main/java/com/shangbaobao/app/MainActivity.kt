@@ -9,6 +9,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import com.shangbaobao.app.ai.AiGateway
+import com.shangbaobao.app.ai.AiSettingsRepository
 import com.shangbaobao.app.agent.AgentForegroundService
 import com.shangbaobao.app.data.ModeSettingsRepository
 import com.shangbaobao.app.platform.PermissionInspector
@@ -17,6 +19,8 @@ import com.shangbaobao.app.ui.theme.ShangBaoBaoTheme
 
 class MainActivity : ComponentActivity() {
     private val modeSettings by lazy { ModeSettingsRepository(applicationContext) }
+    private val aiSettings by lazy { AiSettingsRepository(applicationContext) }
+    private val aiGateway by lazy { AiGateway() }
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -31,6 +35,8 @@ class MainActivity : ComponentActivity() {
             ShangBaoBaoTheme {
                 ShangBaoBaoApp(
                     modeSettingsRepository = modeSettings,
+                    aiSettingsRepository = aiSettings,
+                    aiGateway = aiGateway,
                     openAccessibilitySettings = {
                         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                     },
@@ -59,4 +65,3 @@ class MainActivity : ComponentActivity() {
         PermissionInspector.refresh(applicationContext)
     }
 }
-
