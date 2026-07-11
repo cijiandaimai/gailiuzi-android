@@ -99,7 +99,7 @@ class AiGateway {
                 setRequestProperty("Content-Type", "application/json")
                 setRequestProperty("Accept", "application/json")
                 if (config.provider == AiProvider.GEMINI) {
-                    setRequestProperty("x-goog-api-client", "gailiuzi-android/0.4.0")
+                    setRequestProperty("x-goog-api-client", "gailiuzi-android/0.4.1")
                 }
                 if (route.viaGateway) {
                     setRequestProperty("X-Gailiuzi-Provider", config.provider.routeKey)

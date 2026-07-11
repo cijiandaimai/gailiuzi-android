@@ -61,7 +61,16 @@ object InteractionPolicy {
                 setOf("MONITOR_ONLY"),
             )
         }
-        if (request.platform == Platform.XIAOHONGSHU || !request.officialWriteCapability) {
+        if (request.platform == Platform.XIAOHONGSHU) {
+            return PolicyDecision(
+                InteractionDecision.DRAFT_FOR_APPROVAL,
+                setOf(
+                    "XHS_COMMUNITY_MANUAL_SEND_ONLY",
+                    "XHS_NO_CONFIRMED_OFFICIAL_COMMUNITY_WRITE_API",
+                ),
+            )
+        }
+        if (!request.officialWriteCapability) {
             return PolicyDecision(
                 InteractionDecision.DRAFT_FOR_APPROVAL,
                 setOf("HUMAN_CONFIRMATION_REQUIRED"),
@@ -82,4 +91,3 @@ object InteractionPolicy {
         )
     }
 }
-

@@ -3,6 +3,7 @@ package com.gailiuzi.app.ai
 import android.content.Context
 import androidx.core.content.edit
 import com.gailiuzi.app.model.Platform
+import com.gailiuzi.app.platform.xhs.XhsPlatformContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -205,6 +206,15 @@ class AiSettingsRepository(context: Context) {
             clientId = preferences.getString("official_${platform.name}_client_id", "").orEmpty(),
             clientSecretConfigured = secretStore.contains(platformSecretKey(platform)),
             scopes = preferences.getString("official_${platform.name}_scopes", defaults.second).orEmpty(),
+            capabilitySummary = when (platform) {
+                Platform.DOUYIN -> "视频与评论能力按实际审核 Scope 执行"
+                Platform.MEITUAN -> "商家评价能力需按签约与门店资质确认"
+                Platform.XIAOHONGSHU -> "电商能力可按资质接入；社区搜索、评论读取与回复未确认官方开放，只生成草稿并人工发送"
+            },
+            documentationUrl = when (platform) {
+                Platform.XIAOHONGSHU -> XhsPlatformContract.OPEN_PLATFORM_API_DOCS
+                else -> defaults.first
+            },
         )
     }
 

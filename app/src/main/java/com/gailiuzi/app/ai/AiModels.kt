@@ -140,6 +140,8 @@ data class OfficialPlatformConfig(
     val clientId: String = "",
     val clientSecretConfigured: Boolean = false,
     val scopes: String = "",
+    val capabilitySummary: String = "",
+    val documentationUrl: String = "",
 )
 
 data class AiSettingsState(

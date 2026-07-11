@@ -69,6 +69,10 @@ object ReplyPromptComposer {
             }
             appendLine("回复必须基于已提供信息，不编造价格、效果、调查结论或承诺。")
             appendLine("只输出可直接使用的中文回复，不解释生成过程。")
+            if (platform == Platform.XIAOHONGSHU) {
+                appendLine("小红书社区约束：不伪装普通消费者，不编造体验，不引导站外联系，不使用无关广告话术。")
+                appendLine("草稿必须基于笔记、目标评论和父级对话上下文，最终发布由人工确认。")
+            }
             if (profile.enabled && profile.customInstructions.isNotBlank()) {
                 appendLine("补充要求：${profile.customInstructions.trim()}")
             }

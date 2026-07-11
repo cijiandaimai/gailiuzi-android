@@ -586,6 +586,17 @@ private fun OfficialPlatformCard(
                 label = { Text("Scopes / 权限范围") },
                 modifier = Modifier.fillMaxWidth(),
             )
+            if (config.capabilitySummary.isNotBlank()) {
+                Text(
+                    config.capabilitySummary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (config.platform == Platform.XIAOHONGSHU) {
+                        Color(0xFFB54708)
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
             Button(
                 onClick = {
                     repository.saveOfficialPlatform(

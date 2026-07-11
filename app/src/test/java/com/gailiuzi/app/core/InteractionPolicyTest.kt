@@ -4,6 +4,7 @@ import com.gailiuzi.app.model.AutomationLevel
 import com.gailiuzi.app.model.AutomationMode
 import com.gailiuzi.app.model.Platform
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class InteractionPolicyTest {
@@ -21,6 +22,7 @@ class InteractionPolicyTest {
             baseRequest.copy(platform = Platform.XIAOHONGSHU),
         )
         assertEquals(InteractionDecision.DRAFT_FOR_APPROVAL, decision.decision)
+        assertTrue("XHS_COMMUNITY_MANUAL_SEND_ONLY" in decision.reasonCodes)
     }
 
     @Test
@@ -42,4 +44,3 @@ class InteractionPolicyTest {
         officialWriteCapability = true,
     )
 }
-
