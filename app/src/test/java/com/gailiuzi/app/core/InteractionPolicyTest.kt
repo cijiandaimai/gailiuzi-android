@@ -75,6 +75,32 @@ class InteractionPolicyTest {
         assertEquals(InteractionDecision.ALLOW_DETERMINISTIC_ACTION, decision.decision)
     }
 
+    @Test
+    fun `official write without explicit approval remains a draft`() {
+        val decision = InteractionPolicy.decide(
+            baseRequest.copy(
+                mode = AutomationMode.FRONT_DESK,
+                humanApprovalRecorded = false,
+            ),
+        )
+
+        assertEquals(InteractionDecision.DRAFT_FOR_APPROVAL, decision.decision)
+        assertTrue("EXPLICIT_APPROVAL_REQUIRED" in decision.reasonCodes)
+    }
+
+    @Test
+    fun `non owned context cannot become deterministic action`() {
+        val decision = InteractionPolicy.decide(
+            baseRequest.copy(
+                mode = AutomationMode.FRONT_DESK,
+                ownedAccountContext = false,
+            ),
+        )
+
+        assertEquals(InteractionDecision.DRAFT_FOR_APPROVAL, decision.decision)
+        assertTrue("NON_OWNED_CONTEXT_MANUAL_ONLY" in decision.reasonCodes)
+    }
+
     private val baseRequest = InteractionRequest(
         platform = Platform.DOUYIN,
         mode = AutomationMode.SHOPPING,
@@ -83,6 +109,8 @@ class InteractionPolicyTest {
         riskLevel = RiskLevel.P3,
         topicRelevant = true,
         hasRequiredContext = true,
+        ownedAccountContext = true,
         officialWriteCapability = true,
+        humanApprovalRecorded = true,
     )
 }

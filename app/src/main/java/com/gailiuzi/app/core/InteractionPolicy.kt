@@ -27,7 +27,9 @@ data class InteractionRequest(
     val riskLevel: RiskLevel,
     val topicRelevant: Boolean,
     val hasRequiredContext: Boolean,
+    val ownedAccountContext: Boolean,
     val officialWriteCapability: Boolean,
+    val humanApprovalRecorded: Boolean,
 )
 
 data class PolicyDecision(
@@ -91,6 +93,12 @@ object InteractionPolicy {
                 setOf("DOUYIN_DISCOVERY_APPROVAL_REQUIRED"),
             )
         }
+        if (!request.ownedAccountContext) {
+            return PolicyDecision(
+                InteractionDecision.DRAFT_FOR_APPROVAL,
+                setOf("NON_OWNED_CONTEXT_MANUAL_ONLY"),
+            )
+        }
         if (!request.officialWriteCapability) {
             return PolicyDecision(
                 InteractionDecision.DRAFT_FOR_APPROVAL,
@@ -99,7 +107,8 @@ object InteractionPolicy {
         }
         if (request.automationLevel == AutomationLevel.ASSISTED &&
             request.mode == AutomationMode.FRONT_DESK &&
-            request.riskLevel == RiskLevel.P3
+            request.riskLevel == RiskLevel.P3 &&
+            request.humanApprovalRecorded
         ) {
             return PolicyDecision(
                 InteractionDecision.ALLOW_DETERMINISTIC_ACTION,
@@ -108,7 +117,13 @@ object InteractionPolicy {
         }
         return PolicyDecision(
             InteractionDecision.DRAFT_FOR_APPROVAL,
-            setOf("DEFAULT_APPROVAL_POLICY"),
+            setOf(
+                if (request.humanApprovalRecorded) {
+                    "DEFAULT_APPROVAL_POLICY"
+                } else {
+                    "EXPLICIT_APPROVAL_REQUIRED"
+                },
+            ),
         )
     }
 }

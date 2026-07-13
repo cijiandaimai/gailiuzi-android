@@ -2,6 +2,7 @@ package com.gailiuzi.app.agent
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
+import com.gailiuzi.app.core.GenericPlatformRiskDetector
 import com.gailiuzi.app.model.AgentEventType
 import com.gailiuzi.app.model.Platform
 import com.gailiuzi.app.platform.douyin.DouyinPageClassifier
@@ -22,7 +23,7 @@ class GailiuziAccessibilityService : AccessibilityService() {
         AgentEventStore.add(
             AgentEventType.SYSTEM,
             title = "操作辅助已授权",
-            detail = "已开始识别受支持平台的可见页面。",
+            detail = "授权已就绪，启动辅助服务后才会观察受支持平台的前台页面。",
         )
     }
 
@@ -30,6 +31,7 @@ class GailiuziAccessibilityService : AccessibilityService() {
         event ?: return
         val packageName = event.packageName?.toString() ?: return
         val platform = Platform.fromPackageName(packageName) ?: return
+        if (!AgentEventStore.running.value) return
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
             event.eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
         ) return
@@ -70,24 +72,14 @@ class GailiuziAccessibilityService : AccessibilityService() {
 
         lastPageKey = pageKey
         lastRecordedAt = now
-        if (platform == Platform.DOUYIN && douyinPage == DouyinPageType.LOGIN_OR_RISK) {
-            AgentEventStore.setRunning(false)
-            AgentEventStore.add(
-                type = AgentEventType.SAFETY,
-                title = "抖音需要人工处理",
-                detail = "$pageName · $rawPageName · 已停止当前辅助流程",
-                platform = platform,
-            )
-            return
+        val safetyPageDetected = when (platform) {
+            Platform.DOUYIN -> douyinPage == DouyinPageType.LOGIN_OR_RISK
+            Platform.KUAISHOU -> kuaishouPage == KuaishouPageType.LOGIN_OR_RISK
+            Platform.XIAOHONGSHU -> xhsPage == XhsPageType.LOGIN_OR_RESTRICTED
+            Platform.MEITUAN -> GenericPlatformRiskDetector.isRiskPage(fullClassName)
         }
-        if (platform == Platform.KUAISHOU && kuaishouPage == KuaishouPageType.LOGIN_OR_RISK) {
-            AgentEventStore.setRunning(false)
-            AgentEventStore.add(
-                type = AgentEventType.SAFETY,
-                title = "快手需要人工处理",
-                detail = "$pageName · $rawPageName · 已停止当前辅助流程",
-                platform = platform,
-            )
+        if (safetyPageDetected) {
+            stopForSafety(platform, pageName, rawPageName)
             return
         }
         AgentEventStore.add(
@@ -112,6 +104,17 @@ class GailiuziAccessibilityService : AccessibilityService() {
             title = "操作辅助被中断",
             detail = "当前不会继续执行设备操作。",
         )
+    }
+
+    private fun stopForSafety(platform: Platform, pageName: String, rawPageName: String) {
+        AgentEventStore.setRunning(false)
+        AgentEventStore.add(
+            type = AgentEventType.SAFETY,
+            title = "${platform.displayName}需要人工处理",
+            detail = "$pageName · $rawPageName · 已停止全部辅助流程",
+            platform = platform,
+        )
+        AgentForegroundService.stop(this)
     }
 
     private companion object {
