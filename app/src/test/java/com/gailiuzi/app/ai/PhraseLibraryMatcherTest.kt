@@ -76,4 +76,18 @@ class PhraseLibraryMatcherTest {
         assertNull(prompt.preferredPhraseId)
         assertTrue(!prompt.instructions.contains("预置话术库已开启"))
     }
+
+    @Test
+    fun `kuaishou prompt includes community execution constraints`() {
+        val prompt = ReplyPromptComposer.compose(
+            profile = AssistantProfile(),
+            phraseLibraryEnabled = true,
+            phrases = phrases,
+            userContent = "这个项目周末能预约吗？",
+            platform = Platform.KUAISHOU,
+        )
+
+        assertTrue(prompt.instructions.contains("快手运营约束"))
+        assertTrue(prompt.instructions.contains("发布评论"))
+    }
 }

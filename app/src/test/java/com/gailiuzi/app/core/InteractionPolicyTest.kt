@@ -26,6 +26,21 @@ class InteractionPolicyTest {
     }
 
     @Test
+    fun `kuaishou community interaction requires manual send even with official capability`() {
+        val decision = InteractionPolicy.decide(
+            baseRequest.copy(
+                platform = Platform.KUAISHOU,
+                mode = AutomationMode.FRONT_DESK,
+                officialWriteCapability = true,
+            ),
+        )
+
+        assertEquals(InteractionDecision.DRAFT_FOR_APPROVAL, decision.decision)
+        assertTrue("KUAISHOU_COMMUNITY_MANUAL_SEND_ONLY" in decision.reasonCodes)
+        assertTrue("KUAISHOU_NO_CONFIRMED_COMMENT_WRITE_API" in decision.reasonCodes)
+    }
+
+    @Test
     fun `missing context cannot produce a write action`() {
         val decision = InteractionPolicy.decide(
             baseRequest.copy(hasRequiredContext = false),

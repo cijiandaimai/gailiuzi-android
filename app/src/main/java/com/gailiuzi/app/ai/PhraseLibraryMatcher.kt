@@ -73,6 +73,10 @@ object ReplyPromptComposer {
                 appendLine("抖音运营约束：仅回应自有内容或已审核品牌关键词场景，不跨话题引流，不使用重复刷屏话术。")
                 appendLine("草稿必须区分视频作者、评论发起者和跟评访客，并引用对方的实际问题或上下文。")
             }
+            if (platform == Platform.KUAISHOU) {
+                appendLine("快手运营约束：仅处理自有作品或与已审核品牌任务直接相关的内容，不跨话题引流。")
+                appendLine("必须基于作品、作者和当前评论链生成草稿；不伪装消费者，不批量点赞、关注、私信或发布评论。")
+            }
             if (platform == Platform.XIAOHONGSHU) {
                 appendLine("小红书社区约束：不伪装普通消费者，不编造体验，不引导站外联系，不使用无关广告话术。")
                 appendLine("草稿必须基于笔记、目标评论和父级对话上下文，最终发布由人工确认。")

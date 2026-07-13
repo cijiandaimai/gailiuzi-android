@@ -590,7 +590,7 @@ private fun OfficialPlatformCard(
                 Text(
                     config.capabilitySummary,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (config.platform == Platform.XIAOHONGSHU) {
+                    color = if (config.platform in setOf(Platform.KUAISHOU, Platform.XIAOHONGSHU)) {
                         Color(0xFFB54708)
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant

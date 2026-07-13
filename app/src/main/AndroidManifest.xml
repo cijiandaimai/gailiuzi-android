@@ -9,6 +9,7 @@
 
     <queries>
         <package android:name="com.ss.android.ugc.aweme" />
+        <package android:name="com.smile.gifmaker" />
         <package android:name="com.sankuai.meituan" />
         <package android:name="com.dianping.v1" />
         <package android:name="com.xingin.xhs" />

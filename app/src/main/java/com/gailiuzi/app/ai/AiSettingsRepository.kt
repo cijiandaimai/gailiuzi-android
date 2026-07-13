@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.edit
 import com.gailiuzi.app.model.Platform
 import com.gailiuzi.app.platform.douyin.DouyinPlatformContract
+import com.gailiuzi.app.platform.kuaishou.KuaishouPlatformContract
 import com.gailiuzi.app.platform.xhs.XhsPlatformContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -196,6 +197,8 @@ class AiSettingsRepository(context: Context) {
     private fun loadOfficialPlatform(platform: Platform): OfficialPlatformConfig {
         val defaults = when (platform) {
             Platform.DOUYIN -> "https://open.douyin.com" to DouyinPlatformContract.REQUIRED_SCOPES
+            Platform.KUAISHOU -> KuaishouPlatformContract.OPEN_PLATFORM_URL to
+                KuaishouPlatformContract.RECOMMENDED_SCOPES
             Platform.MEITUAN -> "https://openapi.meituan.com" to ""
             Platform.XIAOHONGSHU -> "https://open.xiaohongshu.com" to ""
         }
@@ -217,12 +220,14 @@ class AiSettingsRepository(context: Context) {
             scopes = effectiveScopes,
             capabilitySummary = when (platform) {
                 Platform.DOUYIN -> "自有视频评论与已审核品牌关键词能力优先走官方 API；UI 通道只辅助定位和生成待审批草稿"
+                Platform.KUAISHOU -> "授权用户与自有作品数据可走官方 API；社区搜索和评论只做可见辅助、草稿与人工发布"
                 Platform.MEITUAN -> "商家评价能力需按签约与门店资质确认"
                 Platform.XIAOHONGSHU -> "电商能力可按资质接入；社区搜索、评论读取与回复未确认官方开放，只生成草稿并人工发送"
             },
             documentationUrl = when (platform) {
                 Platform.XIAOHONGSHU -> XhsPlatformContract.OPEN_PLATFORM_API_DOCS
                 Platform.DOUYIN -> DouyinPlatformContract.OPEN_PLATFORM_URL
+                Platform.KUAISHOU -> KuaishouPlatformContract.OPEN_PLATFORM_API_DOCS
                 else -> defaults.first
             },
         )

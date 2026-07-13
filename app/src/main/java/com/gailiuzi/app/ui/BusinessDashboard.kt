@@ -110,7 +110,7 @@ fun BusinessDashboard(repository: BusinessRepository) {
                     Text("线上线下一体化口碑", style = MaterialTheme.typography.titleMedium)
                 }
                 Text(
-                    "统一汇总抖音/美团/小红书线上评价、商品评价与门店服务反馈，按总部—区域—门店下钻。",
+                    "统一汇总抖音/快手/美团/小红书线上评价、商品评价与门店服务反馈，按总部—区域—门店下钻。",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 HorizontalDivider()

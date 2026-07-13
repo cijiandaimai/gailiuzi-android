@@ -70,6 +70,15 @@ object InteractionPolicy {
                 ),
             )
         }
+        if (request.platform == Platform.KUAISHOU) {
+            return PolicyDecision(
+                InteractionDecision.DRAFT_FOR_APPROVAL,
+                setOf(
+                    "KUAISHOU_COMMUNITY_MANUAL_SEND_ONLY",
+                    "KUAISHOU_NO_CONFIRMED_COMMENT_WRITE_API",
+                ),
+            )
+        }
         if (request.platform == Platform.DOUYIN && !request.officialWriteCapability) {
             return PolicyDecision(
                 InteractionDecision.DRAFT_FOR_APPROVAL,

@@ -62,6 +62,7 @@ data class ReputationSnapshot(
 
 enum class FeedbackSource(val displayName: String, val online: Boolean) {
     DOUYIN("抖音", true),
+    KUAISHOU("快手", true),
     MEITUAN("美团/点评", true),
     XIAOHONGSHU("小红书", true),
     ONLINE_STORE("线上商品", true),

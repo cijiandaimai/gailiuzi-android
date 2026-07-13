@@ -5,6 +5,7 @@ enum class Platform(
     val packageNames: Set<String>,
 ) {
     DOUYIN("抖音", setOf("com.ss.android.ugc.aweme")),
+    KUAISHOU("快手", setOf("com.smile.gifmaker")),
     MEITUAN("美团", setOf("com.sankuai.meituan", "com.dianping.v1")),
     XIAOHONGSHU("小红书", setOf("com.xingin.xhs")),
     ;
@@ -64,4 +65,3 @@ data class PermissionSnapshot(
     val notificationListenerEnabled: Boolean = false,
     val notificationPermissionGranted: Boolean = false,
 )
-
