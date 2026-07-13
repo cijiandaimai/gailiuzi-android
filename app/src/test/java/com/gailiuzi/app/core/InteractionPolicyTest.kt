@@ -33,6 +33,33 @@ class InteractionPolicyTest {
         assertEquals(InteractionDecision.SAVE_AS_OPPORTUNITY, decision.decision)
     }
 
+    @Test
+    fun `douyin ui fallback always requires manual confirmation`() {
+        val decision = InteractionPolicy.decide(
+            baseRequest.copy(officialWriteCapability = false),
+        )
+
+        assertEquals(InteractionDecision.DRAFT_FOR_APPROVAL, decision.decision)
+        assertTrue("DOUYIN_UI_MANUAL_CONFIRMATION_REQUIRED" in decision.reasonCodes)
+    }
+
+    @Test
+    fun `douyin discovery interactions require approval even with official capability`() {
+        val decision = InteractionPolicy.decide(baseRequest)
+
+        assertEquals(InteractionDecision.DRAFT_FOR_APPROVAL, decision.decision)
+        assertTrue("DOUYIN_DISCOVERY_APPROVAL_REQUIRED" in decision.reasonCodes)
+    }
+
+    @Test
+    fun `owned low risk douyin comment may use approved official write capability`() {
+        val decision = InteractionPolicy.decide(
+            baseRequest.copy(mode = AutomationMode.FRONT_DESK),
+        )
+
+        assertEquals(InteractionDecision.ALLOW_DETERMINISTIC_ACTION, decision.decision)
+    }
+
     private val baseRequest = InteractionRequest(
         platform = Platform.DOUYIN,
         mode = AutomationMode.SHOPPING,

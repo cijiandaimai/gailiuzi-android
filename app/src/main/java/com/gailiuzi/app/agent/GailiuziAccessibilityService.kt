@@ -4,12 +4,15 @@ import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
 import com.gailiuzi.app.model.AgentEventType
 import com.gailiuzi.app.model.Platform
+import com.gailiuzi.app.platform.douyin.DouyinPageClassifier
+import com.gailiuzi.app.platform.douyin.DouyinPageType
 import com.gailiuzi.app.platform.xhs.XhsPageClassifier
 import com.gailiuzi.app.platform.xhs.XhsPageType
 
 class GailiuziAccessibilityService : AccessibilityService() {
     private var lastRecordedAt = 0L
     private var lastPageKey: String? = null
+    private var currentDouyinPage: DouyinPageType = DouyinPageType.UNKNOWN
     private var currentXhsPage: XhsPageType = XhsPageType.UNKNOWN
 
     override fun onServiceConnected() {
@@ -30,6 +33,13 @@ class GailiuziAccessibilityService : AccessibilityService() {
 
         val fullClassName = event.className?.toString().orEmpty()
         val rawPageName = fullClassName.substringAfterLast('.').ifBlank { "页面" }
+        val douyinPage = if (platform == Platform.DOUYIN) {
+            DouyinPageClassifier.classify(fullClassName).also { classified ->
+                if (classified != DouyinPageType.UNKNOWN) currentDouyinPage = classified
+            }.takeUnless { it == DouyinPageType.UNKNOWN } ?: currentDouyinPage
+        } else {
+            DouyinPageType.UNKNOWN
+        }
         val xhsPage = if (platform == Platform.XIAOHONGSHU) {
             XhsPageClassifier.classify(fullClassName).also { classified ->
                 if (classified != XhsPageType.UNKNOWN) currentXhsPage = classified
@@ -37,10 +47,10 @@ class GailiuziAccessibilityService : AccessibilityService() {
         } else {
             XhsPageType.UNKNOWN
         }
-        val pageName = if (platform == Platform.XIAOHONGSHU && xhsPage != XhsPageType.UNKNOWN) {
-            xhsPage.displayName
-        } else {
-            rawPageName
+        val pageName = when {
+            platform == Platform.DOUYIN && douyinPage != DouyinPageType.UNKNOWN -> douyinPage.displayName
+            platform == Platform.XIAOHONGSHU && xhsPage != XhsPageType.UNKNOWN -> xhsPage.displayName
+            else -> rawPageName
         }
         val pageKey = "$packageName:$pageName"
         val now = System.currentTimeMillis()
@@ -48,13 +58,25 @@ class GailiuziAccessibilityService : AccessibilityService() {
 
         lastPageKey = pageKey
         lastRecordedAt = now
+        if (platform == Platform.DOUYIN && douyinPage == DouyinPageType.LOGIN_OR_RISK) {
+            AgentEventStore.setRunning(false)
+            AgentEventStore.add(
+                type = AgentEventType.SAFETY,
+                title = "抖音需要人工处理",
+                detail = "$pageName · $rawPageName · 已停止当前辅助流程",
+                platform = platform,
+            )
+            return
+        }
         AgentEventStore.add(
             type = AgentEventType.PAGE_OBSERVED,
             title = "识别到${platform.displayName}页面",
-            detail = if (platform == Platform.XIAOHONGSHU && xhsPage != XhsPageType.UNKNOWN) {
-                "$pageName · $rawPageName · 只读识别，发布需人工确认"
-            } else {
-                pageName
+            detail = when {
+                platform == Platform.DOUYIN && douyinPage != DouyinPageType.UNKNOWN ->
+                    "$pageName · $rawPageName · 官方 API 优先，UI 只作可见辅助"
+                platform == Platform.XIAOHONGSHU && xhsPage != XhsPageType.UNKNOWN ->
+                    "$pageName · $rawPageName · 只读识别，发布需人工确认"
+                else -> pageName
             },
             platform = platform,
         )

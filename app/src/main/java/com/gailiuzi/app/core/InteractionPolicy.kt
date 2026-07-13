@@ -70,6 +70,18 @@ object InteractionPolicy {
                 ),
             )
         }
+        if (request.platform == Platform.DOUYIN && !request.officialWriteCapability) {
+            return PolicyDecision(
+                InteractionDecision.DRAFT_FOR_APPROVAL,
+                setOf("DOUYIN_UI_MANUAL_CONFIRMATION_REQUIRED"),
+            )
+        }
+        if (request.platform == Platform.DOUYIN && request.mode != AutomationMode.FRONT_DESK) {
+            return PolicyDecision(
+                InteractionDecision.DRAFT_FOR_APPROVAL,
+                setOf("DOUYIN_DISCOVERY_APPROVAL_REQUIRED"),
+            )
+        }
         if (!request.officialWriteCapability) {
             return PolicyDecision(
                 InteractionDecision.DRAFT_FOR_APPROVAL,

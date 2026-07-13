@@ -3,6 +3,7 @@ package com.gailiuzi.app.ai
 import android.content.Context
 import androidx.core.content.edit
 import com.gailiuzi.app.model.Platform
+import com.gailiuzi.app.platform.douyin.DouyinPlatformContract
 import com.gailiuzi.app.platform.xhs.XhsPlatformContract
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -194,9 +195,17 @@ class AiSettingsRepository(context: Context) {
 
     private fun loadOfficialPlatform(platform: Platform): OfficialPlatformConfig {
         val defaults = when (platform) {
-            Platform.DOUYIN -> "https://open.douyin.com" to "video.comment,video.search"
+            Platform.DOUYIN -> "https://open.douyin.com" to DouyinPlatformContract.REQUIRED_SCOPES
             Platform.MEITUAN -> "https://openapi.meituan.com" to ""
             Platform.XIAOHONGSHU -> "https://open.xiaohongshu.com" to ""
+        }
+        val savedScopes = preferences.getString("official_${platform.name}_scopes", defaults.second).orEmpty()
+        val effectiveScopes = if (
+            platform == Platform.DOUYIN && savedScopes == LEGACY_DOUYIN_DEFAULT_SCOPES
+        ) {
+            DouyinPlatformContract.REQUIRED_SCOPES
+        } else {
+            savedScopes
         }
         return OfficialPlatformConfig(
             platform = platform,
@@ -205,14 +214,15 @@ class AiSettingsRepository(context: Context) {
                 .orEmpty().ifBlank { defaults.first },
             clientId = preferences.getString("official_${platform.name}_client_id", "").orEmpty(),
             clientSecretConfigured = secretStore.contains(platformSecretKey(platform)),
-            scopes = preferences.getString("official_${platform.name}_scopes", defaults.second).orEmpty(),
+            scopes = effectiveScopes,
             capabilitySummary = when (platform) {
-                Platform.DOUYIN -> "视频与评论能力按实际审核 Scope 执行"
+                Platform.DOUYIN -> "自有视频评论与已审核品牌关键词能力优先走官方 API；UI 通道只辅助定位和生成待审批草稿"
                 Platform.MEITUAN -> "商家评价能力需按签约与门店资质确认"
                 Platform.XIAOHONGSHU -> "电商能力可按资质接入；社区搜索、评论读取与回复未确认官方开放，只生成草稿并人工发送"
             },
             documentationUrl = when (platform) {
                 Platform.XIAOHONGSHU -> XhsPlatformContract.OPEN_PLATFORM_API_DOCS
+                Platform.DOUYIN -> DouyinPlatformContract.OPEN_PLATFORM_URL
                 else -> defaults.first
             },
         )
@@ -285,6 +295,7 @@ class AiSettingsRepository(context: Context) {
         private const val KEY_PROFILE_CUSTOM = "profile_custom"
         private const val KEY_PHRASE_LIBRARY_ENABLED = "phrase_library_enabled"
         private const val KEY_PHRASES_JSON = "phrases_json"
+        private const val LEGACY_DOUYIN_DEFAULT_SCOPES = "video.comment,video.search"
 
         fun defaultPhrases(): List<PhraseTemplate> = listOf(
             PhraseTemplate(
