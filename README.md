@@ -1,3 +1,9 @@
+# Gailiuzi (Android) — English Summary
+
+Gailiuzi is a merchant reputation assistant for service businesses on Douyin, Kuaishou, Meituan/Dianping, and Xiaohongshu (RED). It helps local merchants — including travel and shop-visit (探店) businesses — discover brand-related content, manage reviews, and draft replies with AI assistance.
+
+Key principles: official platform APIs first, human approval before any public post, and no unattended likes, follows, comments, or direct messages. The app is built in Kotlin with Jetpack Compose (Material 3) for Android 12+.
+
 # 改流子（Android）
 
 改流子是一款面向抖音、快手、美团/大众点评和小红书的 Android 服务行业口碑运营助手。本仓库包含可构建的 Android 应用和完整项目方案。
